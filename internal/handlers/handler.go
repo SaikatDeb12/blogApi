@@ -1,30 +1,31 @@
 package handlers
 
 import (
-	"blog/internal/model"
-	"blog/internal/storage"
 	"encoding/json"
 	"net/http"
 	"strconv"
 	"time"
 
+	"blog/internal/model"
+	"blog/internal/storage"
+
 	"github.com/go-chi/chi/v5"
 )
 
-func GetAllBlogs(w http.ResponseWriter, r *http.Request){
+func GetAllBlogs(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
 	json.NewEncoder(w).Encode(storage.Blog)
 }
 
-func GetBlogByID(w http.ResponseWriter, r *http.Request){
-	id, err:=strconv.Atoi(chi.URLParam(r, "id"))
-	if(err!=nil){
+func GetBlogByID(w http.ResponseWriter, r *http.Request) {
+	id, err := strconv.Atoi(chi.URLParam(r, "id"))
+	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
-	for _,blog := range(storage.Blog){
-		if(blog.ID==id){
+	for _, blog := range storage.Blog {
+		if blog.ID == id {
 			w.WriteHeader(http.StatusOK)
 			json.NewEncoder(w).Encode(blog)
 			return
@@ -33,38 +34,38 @@ func GetBlogByID(w http.ResponseWriter, r *http.Request){
 	w.WriteHeader(http.StatusNotFound)
 }
 
-func CreateBlog(w http.ResponseWriter, r *http.Request){
+func CreateBlog(w http.ResponseWriter, r *http.Request) {
 	// w.Header().Set("Content-Type", "application/json")
 	var newBody model.Blog
-	_=json.NewDecoder(r.Body).Decode(&newBody)
+	_ = json.NewDecoder(r.Body).Decode(&newBody)
 
-	nextID := len(storage.Blog)+1
-	newBody.ID=nextID
-	newBody.CreatedAt=time.Now()
-	storage.Blog=append(storage.Blog, newBody)
+	nextID := len(storage.Blog) + 1
+	newBody.ID = nextID
+	newBody.CreatedAt = time.Now()
+	storage.Blog = append(storage.Blog, newBody)
 
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusCreated)
 
-	// sending updated data back to the clien
+	// sending updated data back to the client
 	json.NewEncoder(w).Encode(newBody)
 }
 
-func UpdateBlog(w http.ResponseWriter, r *http.Request){
-	id,_ := strconv.Atoi(chi.URLParam(r, "id"))
+func UpdateBlog(w http.ResponseWriter, r *http.Request) {
+	id, _ := strconv.Atoi(chi.URLParam(r, "id"))
 
 	r.Header.Set("Content-Type", "application/json")
 	var newBody model.Blog
 
-	_=json.NewDecoder(r.Body).Decode(&newBody)
-	newBody.ID=id
-	newBody.CreatedAt=time.Now()
+	_ = json.NewDecoder(r.Body).Decode(&newBody)
+	newBody.ID = id
+	newBody.CreatedAt = time.Now()
 
-	for i,blog := range(storage.Blog){
-		if(blog.ID==id){
-			storage.Blog[i].Author=newBody.Author
-			storage.Blog[i].Title=newBody.Title
-			storage.Blog[i].Body=newBody.Body
+	for i, blog := range storage.Blog {
+		if blog.ID == id {
+			storage.Blog[i].Author = newBody.Author
+			storage.Blog[i].Title = newBody.Title
+			storage.Blog[i].Body = newBody.Body
 			w.Header().Set("Content-Type", "application/json")
 			w.WriteHeader(http.StatusAccepted)
 			json.NewEncoder(w).Encode(newBody)
@@ -76,6 +77,20 @@ func UpdateBlog(w http.ResponseWriter, r *http.Request){
 	json.NewEncoder(w).Encode(newBody)
 }
 
-func DeleteBlog(w http.ResponseWriter, r *http.Request){
+func DeleteBlog(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+	id, _ := strconv.Atoi(chi.URLParam(r, "id"))
 
+	for i, blog := range storage.Blog {
+		if blog.ID == id {
+			storage.Blog = append(storage.Blog[:i], storage.Blog[i+1:]...)
+			w.Header().Set("Content-Type", "application/json")
+
+			w.WriteHeader(http.StatusOK)
+			json.NewEncoder(w).Encode(map[string]string{
+				"msg": "Blog deleted successfully",
+			})
+			return
+		}
+	}
 }
