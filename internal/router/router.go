@@ -13,8 +13,8 @@ func SetUpRouter() http.Handler{
 		r.Get("/", handlers.GetAllBlogs)
 		r.Post("/", handlers.CreateBlog)
 		r.Get("/{id}", handlers.GetBlogByID)
-		r.Put("/{id}", handlers.)
-		r.Delete("/{id}", handlers.)
+		r.Put("/{id}", handlers.UpdateBlog)
+		r.Delete("/{id}", handlers.DeleteBlog)
 	},)
 	return router
 }

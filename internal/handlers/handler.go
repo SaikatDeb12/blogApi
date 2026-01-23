@@ -50,10 +50,32 @@ func CreateBlog(w http.ResponseWriter, r *http.Request){
 	json.NewEncoder(w).Encode(newBody)
 }
 
-func UpdateBlog(){
+func UpdateBlog(w http.ResponseWriter, r *http.Request){
+	id,_ := strconv.Atoi(chi.URLParam(r, "id"))
 
+	r.Header.Set("Content-Type", "application/json")
+	var newBody model.Blog
+
+	_=json.NewDecoder(r.Body).Decode(&newBody)
+	newBody.ID=id
+	newBody.CreatedAt=time.Now()
+
+	for i,blog := range(storage.Blog){
+		if(blog.ID==id){
+			storage.Blog[i].Author=newBody.Author
+			storage.Blog[i].Title=newBody.Title
+			storage.Blog[i].Body=newBody.Body
+			w.Header().Set("Content-Type", "application/json")
+			w.WriteHeader(http.StatusAccepted)
+			json.NewEncoder(w).Encode(newBody)
+			return
+		}
+	}
+
+	w.WriteHeader(http.StatusBadRequest)
+	json.NewEncoder(w).Encode(newBody)
 }
 
-func DeleteBlog(){
+func DeleteBlog(w http.ResponseWriter, r *http.Request){
 
 }
