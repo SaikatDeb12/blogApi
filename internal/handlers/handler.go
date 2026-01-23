@@ -1,10 +1,12 @@
 package handlers
 
 import (
+	"blog/internal/model"
 	"blog/internal/storage"
 	"encoding/json"
 	"net/http"
 	"strconv"
+	"time"
 
 	"github.com/go-chi/chi/v5"
 )
@@ -31,8 +33,21 @@ func GetBlogByID(w http.ResponseWriter, r *http.Request){
 	w.WriteHeader(http.StatusNotFound)
 }
 
-func CreateBlog(){
+func CreateBlog(w http.ResponseWriter, r *http.Request){
+	// w.Header().Set("Content-Type", "application/json")
+	var newBody model.Blog
+	_=json.NewDecoder(r.Body).Decode(&newBody)
 
+	nextID := len(storage.Blog)+1
+	newBody.ID=nextID
+	newBody.CreatedAt=time.Now()
+	storage.Blog=append(storage.Blog, newBody)
+
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusCreated)
+
+	// sending updated data back to the clien
+	json.NewEncoder(w).Encode(newBody)
 }
 
 func UpdateBlog(){
